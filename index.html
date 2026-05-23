@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汽車英文專業術語學科檢定系統</title>
+    <style>
+        :root {
+            --primary-color: #2b5876;
+            --secondary-color: #4e4376;
+            --success-color: #2ec4b6;
+            --danger-color: #e71d36;
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: #ffffff;
+            width: 100%;
+            max-width: 750px;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            display: none;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        /* 進度條 */
+        .progress-container {
+            background: #e0e0e0;
+            border-radius: 8px;
+            height: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, var(--success-color), #20a498);
+            width: 0%;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .info-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+            color: #666;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        /* 題目區 */
+        .question-box {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #111;
+            margin-bottom: 25px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 6px solid var(--primary-color);
+        }
+
+        /* 選項按鈕 */
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background: #ffffff;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px 20px;
+            text-align: left;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--primary-color);
+            background-color: #f0f4f8;
+        }
+
+        .option-btn.correct {
+            background-color: #d1e7dd !important;
+            border-color: #a3cfbb !important;
+            color: #0f5132 !important;
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background-color: #f8d7da !important;
+            border-color: #f5c2c7 !important;
+            color: #842029 !important;
+        }
+
+        /* 解析提示 */
+        .rational-box {
+            display: none;
+            margin-top: 20px;
+            padding: 15px 20px;
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            border-radius: 6px;
+            color: #664d03;
+            font-size: 1rem;
+        }
+
+        /* 按鈕基本樣式 */
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.2s ease;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: #fff;
+            margin-top: 15px;
+        }
+
+        .btn-start:hover {
+            opacity: 0.9;
+        }
+
+        .btn-next {
+            background-color: var(--primary-color);
+            color: white;
+            margin-top: 25px;
+            display: none;
+        }
+
+        .btn-next:hover {
+            background-color: #1f4056;
+        }
+
+        .btn-wrong-retry {
+            background-color: #e67e22;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .btn-wrong-retry:hover {
+            background-color: #d35400;
+        }
+
+        .btn-home {
+            background-color: #7f8c8d;
+            color: white;
+        }
+
+        /* 結果畫面 */
+        .score-num {
+            font-size: 4rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .result-text {
+            text-align: center;
+            font-size: 1.15rem;
+            margin-bottom: 30px;
+            color: #444;
+        }
+
+        /* 跨平台支援（RWD 響應式網頁設計） */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 20px 15px;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            .question-box {
+                font-size: 1.15rem;
+                padding: 15px;
+            }
+            .option-btn {
+                font-size: 1rem;
+                padding: 12px 15px;
+            }
+            .btn {
+                padding: 12px;
+                font-size: 1.1rem;
+            }
+            .score-num {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="screen-start" class="card active">
+        <h1>汽車英文專業術語學科檢定</h1>
+        <div class="subtitle">模擬真實考試：40題英翻中 + 10題中翻英 (每題2分，總分100分)</div>
+        <div style="background: #eef2f5; padding: 15px; border-radius: 8px; margin-bottom: 25px; font-size: 0.95rem; color: #555;">
+            <p>💡 <b>測驗說明：</b></p>
+            <p>1. 系統題庫已擴充至 200 題（160題英翻中 與 40題中翻英）。</p>
+            <p>2. 每次測驗將隨機抽取 40 題英翻中 與 10 題中翻英，組合為 50 題卷。</p>
+            <p>3. 每題答完後，系統會立刻顯示正誤與該單字的解析提示。</p>
+            <p>4. 答錯的題目會被自動記錄，並在結束時提供「錯題再練」功能。</p>
+        </div>
+        <button class="btn btn-start" onclick="startQuiz(false)">開始測驗</button>
+    </div>
+
+    <div id="screen-quiz" class="card">
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        <div class="info-meta">
+            <span id="info-type">分類：英翻中</span>
+            <span id="info-count">題次：1 / 50</span>
+        </div>
+        <div id="question-text" class="question-box"></div>
+        <div id="options-container" class="options-list"></div>
+        <div id="rational-box" class="rational-box"></div>
+        <button id="btn-next" class="btn btn-next" onclick="nextQuestion()">下一題</button>
+    </div>
+
+    <div id="screen-result" class="card">
+        <h1>測驗結束</h1>
+        <div id="score-display" class="score-num">0分</div>
+        <div id="result-summary" class="result-text"></div>
+        <div id="result-actions">
+            <button id="btn-retry-wrong" class="btn btn-wrong-retry" onclick="startQuiz(true)">錯題再練</button>
+            <button class="btn btn-home" onclick="goHome()">返回首頁</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==========================================
+// 汽車英文專業術語完整題庫擴充 (160題英翻中 + 40題中翻英，共200題)
+// ==========================================
+const dbEngToChn = [
+    { q: "Ammeter", a: "電流錶", r: "Ammeter 用於串聯在電路中，主要量測電流強度與充電狀態。", o: ["電壓錶", "電流錶", "比重計", "測微器"] },
+    { q: "Cylinder", a: "汽缸", r: "Cylinder 是活塞運動的密閉空間，為汽車內燃機的核心構造。", o: ["汽缸", "行程", "缸徑", "燃燒室"] },
+    { q: "Octane Number", a: "辛烷值", r: "Octane Number 是測定汽油抗爆震能力（Antiknock Quality）的指標值。", o: ["十六烷值", "辛烷值", "壓縮比", "揮發度"] },
+    { q: "Intake Stroke", a: "進氣行程", r: "四行程引擎的第一個行程，活塞往下運行以吸入混合氣或新鮮空氣。", o: ["壓縮行程", "動力行程", "排氣行程", "進氣行程"] },
+    { q: "Valve", a: "汽門", r: "Valve 負責控制進、排氣通道的開啟與關閉，確保引擎正常換氣。", o: ["正時皮帶", "活塞銷", "汽門", "汽缸體"] },
+    { q: "Gasoline", a: "汽油", r: "Gasoline 為點火式引擎（汽油機）所使用的主要揮發性液體燃料。", o: ["感知器", "汽油", "節流閥", "燃油泵"] },
+    { q: "Nozzle", a: "噴油嘴", r: "Nozzle 用於將燃油轉變為細小霧狀微粒並精準噴入汽缸或進氣道中。", o: ["調速器", "正時器", "噴油嘴", "預熱塞"] },
+    { q: "Piston Ring", a: "活塞環", r: "Piston Ring 裝在活塞槽內，包含氣環（密封）與油環（刮油及導熱）。", o: ["連桿", "飛輪", "活塞環", "活塞銷"] },
+    { q: "Timing Belt", a: "正時皮帶", r: "Timing Belt 用於連接曲軸與凸輪軸，使汽門開閉與活塞位置精準同步。", o: ["汽門", "正時皮帶", "汽缸套", "凸輪軸"] },
+    { q: "Fuel Pump", a: "燃油泵浦", r: "Fuel Pump 負責將燃油從油箱中吸出，建立壓力並輸送至供油系統。", o: ["燃料噴油器", "節流閥", "燃油濾清器", "燃油泵浦"] },
+    { q: "Thermostat", a: "節溫器", r: "Thermostat 俗稱水龜，用於根據冷卻水溫自動切換大、小循環以控制引擎工作溫度。", o: ["水泵浦", "冷卻液", "防凍劑", "節溫器"] },
+    { q: "Turbocharger", a: "渦輪增壓器", r: "Turbocharger 利用排出的廢氣來驅動渦輪，藉此壓縮並增加引擎的進氣量。", o: ["空氣濾清器", "渦輪增壓器", "中間冷卻器", "化油器"] },
+    { q: "Clutch", a: "離合器", r: "Clutch 位在引擎與變速箱之間，負責將動力進行切斷或傳遞傳輸。", o: ["變速箱", "離合器", "差速器", "傳動軸"] },
+    { q: "Brake Lining", a: "煞車來令片", r: "Brake Lining 夾緊煞車盤或壓緊煞車鼓以產生摩擦力來達到減速或制動。", o: ["側向感知器", "煞車來令片", "煞車碟盤", "駐車煞車桿"] },
+    { q: "Damper", a: "減震器", r: "Damper（Shock Absorber）用於迅速吸收懸吊彈簧因衝擊而產生的二次反彈震動。", o: ["平穩桿", "控制臂", "減震器", "三角架"] },
+    { q: "Condenser", a: "冷凝器", r: "Condenser 是冷氣空調的重要組件，將高壓高溫的冷媒釋放熱量，使之凝結為液態。", o: ["分電盤", "空氣調節", "冷凝器", "電子點火"] },
+    { q: "Evaporator", a: "蒸發器", r: "Evaporator 負責讓低壓霧狀冷媒在內部沸騰膨脹吸熱，以冷卻吹過其表面的空氣。", o: ["電壓錶", "乾燥瓶", "油封", "蒸發器"] },
+    { q: "Odometer", a: "里程計", r: "Odometer 用於累計與顯示車輛出廠以來所行駛的總行駛里程數。", o: ["天線", "差速器", "里程計", "行車紀錄器"] },
+    { q: "Instrument Cluster", a: "儀表總成", r: "Instrument Cluster 整合了時速表、轉速表、水溫表與油量表等核心駕駛資訊。", o: ["室內後視鏡", "擋風玻璃", "儀表總成", "車門飾板"] },
+    { q: "Wheelbase", a: "軸距", r: "Wheelbase 指汽車前輪軸中心與後輪軸中心之間的水平距離。", o: ["輪距", "軸距", "前懸", "後懸"] },
+    { q: "Screw Driver", a: "螺絲起子", r: "Screw Driver 是修護用必備工具，用於旋緊或鬆開帶槽的螺絲。", o: ["螺絲起子", "尖嘴鉗", "斜口鉗", "老虎鉗"] },
+    { q: "Crankcase", a: "曲軸箱", r: "Crankcase 位於汽缸體下部，用於容納曲軸，底部則常作為機油底殼。", o: ["皮帶盤", "感知器", "怠速控制閥", "曲軸箱"] },
+    { q: "Spring Hanger", a: "彈簧吊耳", r: "Spring Hanger 是懸吊系統中用來固定與吊掛葉片彈簧的支撐部件。", o: ["彈簧吊耳", "轉向軸", "車輪", "方向盤"] },
+    { q: "Daytime Running Lamp", a: "晝行燈", r: "Daytime Running Lamp (DRL) 在白天行車時自動開啟，提升車輛識別度與安全性。", o: ["霧燈", "煞車燈", "晝行燈", "頭燈"] },
+    { q: "Brake Horse Power", a: "煞車馬力", r: "Brake Horse Power (BHP) 是指引擎在輸出軸上實際可供利用的淨馬力值。", o: ["最大扭力", "指示馬力", "煞車馬力", "摩擦馬力"] },
+    { q: "Tire Pressure Gauge", a: "輪胎氣壓表", r: "Tire Pressure Gauge 為專門量測和檢查輪胎內部充氣氣壓強度的精密量具。", o: ["溫度計", "輪胎氣壓表", "電壓錶", "電流表"] },
+    { q: "High Pressure Pipe", a: "高壓鋼管", r: "High Pressure Pipe 常見於柴油共軌或直噴系統，用於承載與輸送極高壓力的燃油。", o: ["高壓鋼管", "調速器", "預熱塞", "流量限流閥"] },
+    { q: "Pressure Regulation Valve", a: "壓力調節閥", r: "Pressure Regulation Valve 根據回饋自動開啟或關閉以調控管路中的工作壓力。", o: ["壓力調節閥", "共軌管", "混合比感知器", "電子控制單元"] },
+    { q: "Door Lock", a: "車門鎖", r: "Door Lock 是負責將車門緊閉、上鎖以防行車外開並保證防盜安全的部件。", o: ["安全帶", "車門飾板", "車門鎖", "大樑"] },
+    { q: "Frame", a: "大樑", r: "Frame 是傳統貨車、非承載式車身的底盤大樑骨架，承受全車重與扭力。", o: ["頭枕", "大樑", "擋風玻璃", "車頂"] },
+    { q: "Vehicle Identification Number", a: "車身識別碼", r: "Vehicle Identification Number 縮寫為 VIN，即通常所說的17碼車身號碼。", o: ["車身號碼", "檢驗設備", "引擎號碼", "車身識別碼"] },
+    { q: "Grade Ability", a: "爬坡能力", r: "Grade Ability 是汽車滿載時用第一檔在良好路面上所能爬上的最大坡度百分比。", o: ["後懸", "爬坡能力", "前懸", "輪距"] },
+    { q: "Certification for Inspector", a: "汽車檢驗員證", r: "Certification for Inspector 是經由政府公路監理機關檢定合格發給的檢驗員執照。", o: ["汽車檢驗員證", "行車執照", "汽車修護技工執照", "進口證明"] },
+    { q: "Traffic Marker", a: "標線", r: "Traffic Marker 在路面上繪製，用以管制與引導交通的線條、箭頭或文字。", o: ["標誌", "標字", "匝道", "標線"] },
+    { q: "Motor Insurance Certificate", a: "強制汽車責任保險證", r: "Motor Insurance Certificate 是法令規定車輛行駛與驗車時必須備妥之投保憑證。", o: ["出廠證明", "強制汽車責任保險證", "行車執照", "牌照登記書"] },
+    { q: "Coolant Fluid", a: "冷卻液", r: "Coolant Fluid 主要由水與防凍劑混合而成，在引擎冷卻系統內循環帶走高熱。", o: ["冷卻液", "冷卻水位感知器", "中間冷卻器", "防凍劑"] },
+    { q: "Over Head Camshaft", a: "頂上凸輪軸", r: "Over Head Camshaft 簡稱 OHC，代表凸輪軸配置在汽缸蓋頂部，直接驅動汽門。", o: ["頂上雙凸輪軸", "頂上凸輪軸", "頂上單凸輪軸", "頂上汽門"] },
+    { q: "Drive Shaft", a: "傳動軸", r: "Drive Shaft 用於將變速箱或差速器的動力傳遞到車輪上的旋轉軸。", o: ["傳動軸", "前輪軸", "驅動軸", "車軸"] },
+    { q: "Spark Plug Gauge", a: "火星塞量規", r: "Spark Plug Gauge 用於測量或調整火星塞電極之間的跳火點火間隙（Gap）。", o: ["電子點火", "火星塞間隙", "點火線圈", "火星塞量規"] },
+    { q: "Inspection Outlay", a: "檢驗費", r: "Inspection Outlay 指車輛定期檢驗或各項臨時安全檢定時依法收取的規費。", o: ["牌照登記書", "當季汽燃費繳納收據", "行車執照", "檢驗費"] },
+    // 追加擴充至160題（以下為自動生成之專業術語項目補足）
+    { q: "Alternator", a: "交流發電機", r: "Alternator 由引擎皮帶驅動，負責在行駛時對電瓶充電並供應全車用電。", o: ["起動馬達", "交流發電機", "分電盤", "點火線圈"] },
+    { q: "Battery", a: "電瓶", r: "Battery 儲存化學能並轉化為電能，提供起動引擎所需的瞬間大電流。", o: ["電瓶", "發電機", "電容器", "繼電器"] },
+    { q: "Radiator", a: "水箱", r: "Radiator 位於車頭，透過大面積散熱片與行駛風力冷卻循環水。", o: ["副水箱", "水箱", "節溫器", "水泵"] },
+    { q: "Ignition Coil", a: "點火線圈", r: "Ignition Coil 將電瓶的低電壓提升至數萬伏特的高壓電以供火星塞跳火。", o: ["火星塞", "激磁線圈", "分電盤", "點火線圈"] },
+    { q: "Starter Motor", a: "起動馬達", r: "Starter Motor 消耗電瓶電能以齒輪驅動飛輪旋轉，從而發動引擎。", o: ["交流發電機", "發電機", "起動馬達", "雨刷馬達"] },
+    { q: "Carburetor", a: "化油器", r: "Carburetor 是傳統引擎利用文氏管效應將汽油與空氣混合霧化的裝置。", o: ["化油器", "節流閥", "噴油嘴", "油水分離器"] },
+    { q: "Fuel Filter", a: "燃油濾清器", r: "Fuel Filter 用於過濾燃油中的雜質與水分，保護噴油嘴不被阻塞。", o: ["空氣濾清器", "機油濾清器", "燃油濾清器", "冷氣濾網"] },
+    { q: "Oil Pump", a: "機油泵", r: "Oil Pump 將機油底殼內的機油建立壓力，輸送至引擎各機件表面潤滑。", o: ["水泵", "燃油泵", "機油泵", "真空泵"] },
+    { q: "Air Filter", a: "空氣濾清器", r: "Air Filter 防止空氣中的灰塵與沙粒進入汽缸造成汽缸壁異常磨損。", o: ["冷氣濾網", "空氣濾清器", "機油濾清器", "活性碳罐"] },
+    { q: "Manifold", a: "歧管", r: "Manifold 包含進氣與排氣歧管，負責分配混合氣或匯集各缸廢氣。", o: ["導管", "歧管", "油管", "氣門導管"] },
+    { q: "Flywheel", a: "飛輪", r: "Flywheel 裝在曲軸後端，利用轉動慣量蓄積能量使引擎運轉平穩並傳遞動力。", o: ["離合器", "凸輪軸", "飛輪", "扭力轉換器"] },
+    { q: "Connecting Rod", a: "連桿", r: "Connecting Rod 連接活塞與曲軸，將活塞的往復直線運動轉為曲軸的旋轉運動。", o: ["連桿", "活塞銷", "曲軸", "凸輪軸"] },
+    { q: "Crankshaft", a: "曲軸", r: "Crankshaft 是引擎的主軸，負責輸出動力並驅動氣門、發電機等附件。", o: ["凸輪軸", "傳動軸", "曲軸", "中間軸"] },
+    { q: "Camshaft", a: "凸輪軸", r: "Camshaft 帶有凸輪，用來精準控制進排氣門的開啟時間與行程長度。", o: ["曲軸", "凸輪軸", "平衡軸", "轉向軸"] },
+    { q: "Piston", a: "活塞", r: "Piston 在汽缸內承受氣體燃燒膨脹壓力，並透過連桿推動曲軸旋轉。", o: ["活塞環", "活塞銷", "活塞", "汽缸套"] },
+    { q: "Combustion Chamber", a: "燃燒室", r: "Combustion Chamber 是汽缸蓋與活塞頂部之間組成的密閉燃燒空間。", o: ["燃燒室", "汽缸體", "曲軸箱", "進氣道"] },
+    { q: "Exhaust Stroke", a: "排氣行程", r: "四行程引擎最後一個行程，活塞向上運動，將燃燒後的廢氣排出汽缸。", o: ["進氣行程", "壓縮行程", "動力行程", "排氣行程"] },
+    { q: "Power Stroke", a: "動力行程", r: "火星塞點火後氣體劇烈膨脹，推動活塞向下作功，是唯一輸出能量的行程。", o: ["動力行程", "進氣行程", "壓縮行程", "排氣行程"] },
+    { q: "Compression Stroke", a: "壓縮行程", r: "進排氣門皆關閉，活塞向上運動將混合氣壓縮，以提高燃燒效率。", o: ["進氣行程", "壓縮行程", "動力行程", "排氣行程"] },
+    { q: "Muffler", a: "消音器", r: "Muffler 安裝在排氣管尾段，透過多孔導管與膨脹室降低排氣噪音。", o: ["觸媒轉化器", "消音器", "排氣歧管", "含氧感知器"] },
+    { q: "Catalytic Converter", a: "觸媒轉化器", r: "Catalytic Converter 利用貴金屬將廢氣中的CO、HC、NOx轉化為無害氣體。", o: ["消音器", "碳罐", "觸媒轉化器", "二次空氣泵"] },
+    { q: "Oxygen Sensor", a: "含氧感知器", r: "Oxygen Sensor 監測排氣中的氧氣含量，以供ECU修正噴油量保持最佳空燃比。", o: ["爆震感知器", "節氣門感知器", "含氧感知器", "水溫感知器"] },
+    { q: "Throttle Body", a: "節氣門體", r: "Throttle Body 內有蝴蝶閥，由油門踏板控制以調節進入引擎的空氣量。", o: ["怠速馬達", "節氣門體", "進氣歧管", "空氣流量計"] },
+    { q: "EGR Valve", a: "廢氣再循環閥", r: "Exhaust Gas Recirculation 導入部分廢氣回進氣道燃燒，降低燃燒溫度以減少NOx。", o: ["PCV閥", "廢氣再循環閥", "蒸發排放閥", "安全閥"] },
+    { q: "PCV Valve", a: "曲軸箱強制通風閥", r: "Positive Crankcase Ventilation 將曲軸箱內的吹漏氣導入汽缸再度燃燒，防污染。", o: ["PCV Valve", "EGR閥", "單向閥", "節流閥"] },
+    { q: "Oil Filter", a: "機油濾清器", r: "Oil Filter 過濾機油中的金屬磨屑、碳粒與油泥，保持潤滑系統清潔。", o: ["燃油濾清器", "機油濾清器", "空氣濾清器", "變速箱濾網"] },
+    { q: "Dipstick", a: "機油尺", r: "Dipstick 是手動檢查引擎機油液位高度與油質狀況的量規油尺。", o: ["油壓表", "機油尺", "厚薄規", "量筒"] },
+    { q: "Intercooler", a: "中間冷卻器", r: "Intercooler 用於冷卻經增壓器壓縮後的高溫空氣，提高空氣密度與進氣量。", o: ["水箱", "冷凝器", "中間冷卻器", "蒸發器"] },
+    { q: "Supercharger", a: "機械增壓器", r: "Supercharger 直接由引擎曲軸透過皮帶驅動，低轉速時增壓反應迅速。", o: ["渦輪增壓器", "機械增壓器", "廢氣閥", "節氣門"] },
+    { q: "Gasket", a: "墊片", r: "Gasket 用於兩靜止平面接觸面之間，防止液體或氣體滲漏的密封件。", o: ["油封", "墊片", "O型環", "螺帽"] },
+    { q: "Oil Seal", a: "油封", r: "Oil Seal 用於旋轉軸與外殼之間，防止內部潤滑油向外滲漏的動密封組件。", o: ["墊片", "襯套", "油封", "防塵套"] },
+    { q: "Transmission", a: "變速箱", r: "Transmission 藉由不同齒輪比改變轉速與扭力，並具備倒檔與空檔功能。", o: ["變速箱", "差速器", "離合器", "加力箱"] },
+    { q: "Torque Converter", a: "扭力轉換器", r: "Torque Converter 是自排變速箱利用自動變速箱油（ATF）傳遞動力的液力耦合部件。", o: ["離合器", "飛輪", "扭力轉換器", "行星齒輪"] },
+    { q: "Differential", a: "差速器", r: "Differential 允許兩側車輪在車輛轉彎時以不同的轉速旋轉，防止輪胎拖滑。", o: ["變速箱", "差速器", "萬向接頭", "驅動軸"] },
+    { q: "Universal Joint", a: "萬向接頭", r: "Universal Joint (U-joint) 允許傳動軸在有夾角角度變化的情況下繼續傳遞動力。", o: ["萬向接頭", "聯軸器", "傳動軸", "軸承"] },
+    { q: "Axle", a: "車軸", r: "Axle 是支撐車身並傳遞動力或承載車輪旋轉的軸心結構。", o: ["車軸", "大樑", "控制臂", "懸吊"] },
+    { q: "Brake Disc", a: "煞車碟盤", r: "Brake Disc 隨車輪同步旋轉，由煞車卡鉗夾緊來令片夾住它來產生制動力。", o: ["煞車鼓", "煞車碟盤", "煞車分泵", "煞車總泵"] },
+    { q: "Brake Drum", a: "煞車鼓", r: "Brake Drum 固定在輪轂上，由內部的煞車蹄片向外張開壓緊產生制動磨擦。", o: ["煞車鼓", "煞車碟盤", "煞車卡鉗", "防塵罩"] },
+    { q: "Brake Caliper", a: "煞車卡鉗", r: "Brake Caliper 內含活塞，接受油壓推動並夾緊煞車來令片以減速。", o: ["煞車總泵", "煞車來令片", "煞車卡鉗", "煞車軟管"] },
+    { q: "Master Cylinder", a: "煞車總泵", r: "Master Cylinder 將踏板產生的機械推力轉化為液壓油壓，輸送到各車輪分泵。", o: ["煞車分泵", "煞車總泵", "真空輔助器", "比例閥"] },
+    { q: "Wheel Cylinder", a: "煞車分泵", r: "Wheel Cylinder 接受總泵傳來的油壓，推動活塞使來令片夾緊盤面或鼓面。", o: ["煞車總泵", "煞車分泵", "卡鉗", "ABS作動器"] },
+    { q: "ABS", a: "防鎖死煞車系統", r: "Anti-lock Braking System 在緊急煞車時自動執行點放煞車，防止車輪鎖死打滑。", o: ["循跡控制", "車身穩定", "防鎖死煞車系統", "電子制動力分配"] },
+    { q: "Shock Absorber", a: "避震器", r: "Shock Absorber 主要是利用液壓阻尼來吸收車身起伏與彈簧反彈的能量。", o: ["彈簧", "避震器", "平衡桿", "控制臂"] },
+    { q: "Coil Spring", a: "圈狀彈簧", r: "Coil Spring 利用鋼絲繞成圈狀，承受衝擊力並支撐全車重量。", o: ["葉片彈簧", "圈狀彈簧", "扭力桿", "氣壓彈簧"] },
+    { q: "Leaf Spring", a: "葉片彈簧", r: "Leaf Spring 由多片長度不同的彈簧鋼片組合而成，多用於大貨車後懸吊承重。", o: ["圈狀彈簧", "葉片彈簧", "防傾桿", "空氣彈簧"] },
+    { q: "Stabilizer Bar", a: "防傾桿", r: "Stabilizer Bar (Anti-roll bar) 連接兩側懸吊，車輛轉彎車身傾斜時產生反作用力減少側傾。", o: ["控制臂", "減震器", "防傾桿", "拉桿"] },
+    { q: "Control Arm", a: "控制臂", r: "Control Arm 連接車架與輪轂導向節，控制車輪的跳動軌跡與上下運動。", o: ["控制臂", "大樑", "轉向節", "拉桿"] },
+    { q: "Ball Joint", a: "球接頭", r: "Ball Joint 類似人類關節，允許懸吊與轉向機構同時進行多角度的旋轉跳動。", o: ["襯套", "球接頭", "螺栓", "萬向節"] },
+    { q: "Bushing", a: "襯套", r: "Bushing 通常由橡膠製成，裝在懸吊關節處用以吸收路面震動與緩衝。", o: ["球接頭", "襯套", "墊圈", "防塵套"] },
+    { q: "Steering Gear", a: "轉向齒輪機", r: "Steering Gear 將方向盤的旋轉運動轉化為拉桿的直線推力，控制前輪轉向。", o: ["轉向軸", "轉向齒輪機", "轉向泵", "方向盤"] },
+    { q: "Tie Rod", a: "轉向拉桿", r: "Tie Rod 將轉向齒輪機的推力傳遞給輪轂轉向節，用來直接拉動車輪轉向。", o: ["轉向軸", "控制臂", "轉向拉桿", "防傾桿"] },
+    { q: "Power Steering Pump", a: "動力轉向泵", r: "Power Steering Pump 建立液壓油壓，提供液壓動力輔助，使轉動方向盤更輕省。", o: ["轉向機", "油箱", "動力轉向泵", "水泵"] },
+    { q: "Wheel Hub", a: "輪轂", r: "Wheel Hub 是安裝輪圈的中心樞紐部件，內部含有軸承使其能在車軸上流暢旋轉。", o: ["輪圈", "輪胎", "輪轂", "煞車盤"] },
+    { q: "Tire", a: "輪胎", r: "Tire 是汽車唯一與地面接觸的部件，負責提供抓地力、緩衝震動與承載重量。", o: ["輪框", "輪胎", "內胎", "氣門嘴"] },
+    { q: "Rim", a: "輪圈", r: "Rim 俗稱輪框，用於安裝與固定輪胎的鋼製或鋁合金製圓形金屬構件。", o: ["輪胎", "輪圈", "輪毂", "軸承"] },
+    { q: "Wheel Alignment", a: "車輪定位", r: "Wheel Alignment 調整前束、外傾角、後傾角等幾何角度，確保行駛穩定與防吃胎。", o: ["輪胎平衡", "車輪定位", "避震更新", "底盤防鏽"] },
+    { q: "Camber", a: "車輪外傾角", r: "Camber 是從正前方看車輪時，車輪中心線與垂直線的夾角（外八或內八）。", o: ["前束", "車輪外傾角", "後傾角", "轉向軸內傾角"] },
+    { q: "Caster", a: "主銷後傾角", r: "Caster 是轉向主銷向前或向後傾斜的角度，主要提供高速行駛時的方向自動回正功能。", o: ["車輪外傾角", "主銷後傾角", "前束", "主銷內傾角"] },
+    { q: "Toe-in", a: "前束", r: "Toe-in 是從正上方俯瞰時，兩前輪前端距離小於後端距離的水平角度數值。", o: ["前束", "前展", "外傾角", "後傾角"] },
+    { q: "Fuse", a: "保險絲", r: "Fuse 在電路電流異常過大時會自動熔斷以保護汽車電器部件，防止火災。", o: ["繼電器", "開關", "保險絲", "斷路器"] },
+    { q: "Relay", a: "繼電器", r: "Relay 是一種電子開關，利用小電流控制電磁鐵，進而控制大功率電路的通斷。", o: ["保險絲", "開關", "繼電器", "電阻"] },
+    { q: "Sensor", a: "感知器", r: "Sensor 將溫度、壓力、轉速等物理信號轉換為電信號發送給電腦（ECU）。", o: ["致動器", "感知器", "微處理器", "顯示器"] },
+    { q: "ECU", a: "電子控制單元", r: "Electronic Control Unit 俗稱行車電腦，負責接收感知器信號並計算控制各元件作動。", o: ["儀表板", "電子控制單元", "繼電器盒", "保險絲座"] },
+    { q: "Wire Harness", a: "汽車線束", r: "Wire Harness 是指將車內各用電器與控制單元連接起來的整車電線束總成。", o: ["電線", "接頭", "汽車線束", "保險絲"] },
+    { q: "Spark Plug", a: "火星塞", r: "Spark Plug 利用高壓電產生電火花，負責點燃汽油引擎汽缸內被壓縮的混合氣。", o: ["火星塞", "預熱塞", "分電盤", "點火線圈"] },
+    { q: "Distributor", a: "分電盤", r: "Distributor 在傳統點火系統中，負責將點火線圈產生的正時高壓電分配到各缸火星塞。", o: ["點火線圈", "火星塞", "分電盤", "電瓶"] },
+    { q: "Headlamp", a: "頭燈", r: "Headlamp 位於車頭兩側，提供夜間行車或能見度不良時的遠近光前方照明。", o: ["尾燈", "頭燈", "霧燈", "方向燈"] },
+    { q: "Taillamp", a: "尾燈", r: "Taillamp 位於車尾，包含小燈與煞車燈，用以提示後方車輛自身位置與減速。", o: ["頭燈", "尾燈", "倒車燈", "牌照燈"] },
+    { q: "Turn Signal Lamp", a: "方向燈", r: "Turn Signal Lamp 在轉彎或變換車道時閃爍發光，用以告示其他車輛變道意圖。", o: ["晝行燈", "煞車燈", "方向燈", "霧燈"] },
+    { q: "Fog Lamp", a: "霧燈", r: "Fog Lamp 具有較強的穿透力，專門用於大霧、豪雨或濃煙等惡劣天氣的視線輔助。", o: ["頭燈", "晝行燈", "霧燈", "倒車燈"] },
+    { q: "Horn", a: "喇叭", r: "Horn 是利用電磁振動發出聲響的警報裝置，用以警告行人或其他車輛注意安全。", o: ["蜂鳴器", "警報器", "喇叭", "音響"] },
+    { q: "Wiper Blade", a: "雨刷片", r: "Wiper Blade 裝在雨刷臂前端，由橡膠製成，用以刮除擋風玻璃上的雨水與污垢。", o: ["雨刷馬達", "雨刷連桿", "雨刷片", "噴水嘴"] },
+    { q: "Windshield", a: "擋風玻璃", r: "Windshield 位於車室前方，主要負責阻擋行駛行進中的強風、雨水與蚊蟲異物進入車室。", o: ["擋風玻璃", "車窗", "後視鏡", "車頂"] },
+    { q: "Rear View Mirror", a: "後視鏡", r: "Rear View Mirror 包含室內後視鏡與兩側車外後視鏡，擴展駕駛人的後方視野。", o: ["化妝鏡", "後視鏡", "車窗", "儀表板"] },
+    { q: "Seat Belt", a: "安全帶", r: "Seat Belt 是最核心的被動安全裝置，在衝撞時將乘員固定在座椅上防止二次碰撞。", o: ["安全氣囊", "頭枕", "安全帶", "座椅滑軌"] },
+    { q: "Airbag", a: "安全氣囊", r: "Airbag 在遭遇劇烈碰撞時迅速充氣膨脹，緩衝乘員頭部與胸部受到的強烈衝擊。", o: ["安全帶", "安全氣囊", "保險桿", "防滾籠"] },
+    { q: "A/C Compressor", a: "冷氣壓縮機", r: "Air Conditioning Compressor 由引擎帶動，負責壓縮冷媒使其在空調系統內循環吸熱。", o: ["冷凝器", "蒸發器", "冷氣壓縮機", "膨脹閥"] },
+    { q: "Expansion Valve", a: "膨脹閥", r: "Expansion Valve 負責將高壓液態冷媒節流降壓，轉變為低壓霧狀進入蒸發器。", o: ["乾燥瓶", "冷凝器", "膨脹閥", "壓縮機"] },
+    { q: "Blower Motor", a: "鼓風機馬達", r: "Blower Motor 帶動葉片旋轉產生風量，將冷氣或暖氣吹入車室內部。", o: ["散熱風扇", "冷凝風扇", "鼓風機馬達", "雨刷馬達"] },
+    { q: "Heater Core", a: "暖氣熱水箱", r: "Heater Core 引入引擎高溫冷卻水，由鼓風機吹過其表面以提供車內暖氣。", o: ["水箱", "暖氣熱水箱", "蒸發器", "冷凝器"] },
+    { q: "Thermo-switch", a: "風扇溫控開關", r: "Thermo-switch 監測水溫，當冷卻水達到預設高溫時自動接通冷卻散熱風扇電路。", o: ["水溫表", "水溫感知器", "風扇溫控開關", "節溫器"] },
+    { q: "Fuel Gauge", a: "燃油表", r: "Fuel Gauge 連接油箱內的浮筒感知器，在儀表板上實時顯示剩餘燃油量。", o: ["時速表", "轉速表", "油壓表", "燃油表"] },
+    { q: "Speedometer", a: "時速表", r: "Speedometer 透過車速感知器計算並顯示車輛當前的每小時行駛速度（KM/H）。", o: ["轉速表", "里程計", "時速表", "氣壓表"] },
+    { q: "Tachometer", a: "轉速計", r: "Tachometer 用以顯示引擎每分鐘的旋轉圈數(RPM)，提醒駕駛人最適當的換檔時機。", o: ["時速表", "轉速計", "油量表", "水溫表"] },
+    { q: "Water Temperature Gauge", a: "水溫表", r: "Water Temperature Gauge 顯示引擎冷卻水的工作溫度，防止引擎過熱（Overheat）。", o: ["油溫表", "水溫表", "機油壓力表", "電壓表"] },
+    { q: "Oil Pressure Warning Light", a: "機油壓力警示燈", r: "當機油壓力過低、機油量不足或泵損壞時，該紅色阿拉丁神燈圖示會亮起報警。", o: ["充電警示燈", "煞車警示燈", "機油壓力警示燈", "引擎故障燈"] },
+    { q: "Check Engine Light", a: "引擎故障燈", r: "Check Engine Light 當ECU偵測到引擎或廢氣排放系統元件運作異常時會亮起起黃燈。", o: ["防滑燈", "安全帶未繫燈", "引擎故障燈", "胎壓報警燈"] },
+    { q: "Brake Fluid", a: "煞車油", r: "Brake Fluid 是液壓煞車系統傳遞壓力的非石油基專用液體（如DOT4）。", o: ["機油", "自排箱油", "煞車油", "動力轉向油"] },
+    { q: "Engine Oil", a: "機油", r: "Engine Oil 具有潤滑、冷卻、清潔、密封、防鏽、緩衝等核心六大功能。", o: ["齒輪油", "機油", "煞車油", "冷卻液"] },
+    { q: "Gear Oil", a: "齒輪油", r: "Gear Oil 用於手排變速箱與後差速器內，黏度通常較高以承受高齒面壓力。", o: ["機油", "齒輪油", "液壓油", "防凍劑"] },
+    { q: "Antifreeze", a: "防凍劑", r: "Antifreeze 主要成分為乙二醇，加入水中能提高沸點、降低凝固點並防鏽蝕。", o: ["冷媒", "防凍劑", "機油添加劑", "制動液"] },
+    { q: "Refrigerant", a: "冷媒", r: "Refrigerant 是空調系統中在氣態與液態間不斷循環轉換以轉移熱量的物質（如R134a）。", o: ["防凍劑", "冷媒", "壓縮機油", "乙二醇"] },
+    { q: "Brake Pedal", a: "煞車踏板", r: "Brake Pedal 供駕駛者用腳踩踏以控制煞車系統減速的操作槓桿介面。", o: ["油門踏板", "離合器踏板", "煞車踏板", "休息踏板"] },
+    { q: "Accelerator Pedal", a: "油門踏板", r: "Accelerator Pedal 供駕駛者踩踏以控制節氣門開度與引擎動力輸出的踏板。", o: ["煞車踏板", "離合器踏板", "油門踏板", "駐車煞車桿"] },
+    { q: "Clutch Pedal", a: "離合器踏板", r: "Clutch Pedal 只存在於手排車，用以切斷或結合引擎與變速箱的動力聯接。", o: ["油門踏板", "煞車踏板", "離合器踏板", "腳煞車踏板"] },
+    { q: "Parking Brake", a: "駐車煞車", r: "Parking Brake 俗稱手煞車，用於車輛停穩後鎖死後輪，防止車輛溜動打滑。", o: ["腳煞車", "駐車煞車", "引擎煞車", "排氣煞車"] },
+    { q: "Chassis", a: "底盤", r: "Chassis 包含傳動、行駛、轉向與制動四大系統，是支撐全車運作的基石結構。", o: ["車身", "引擎", "底盤", "電器系統"] },
+    { q: "Bumper", a: "保險桿", r: "Bumper 裝在車頭與車尾最外側，主要在發生低速碰撞時吸收衝擊力並保護車身。", o: ["葉子板", "引擎蓋", "保險桿", "水箱罩"] },
+    { q: "Fender", a: "葉子板", r: "Fender 俗稱護輪板，覆蓋在車輪上方，防止車輪捲起的泥沙雨水甩向車身。", o: ["保險桿", "側裙", "葉子板", "車門"] },
+    { q: "Hood", a: "引擎蓋", r: "Hood 覆蓋於引擎室上方，保護引擎室部件並符合空氣動力學造型。", o: ["後行李箱蓋", "車頂", "引擎蓋", "葉子板"] },
+    { q: "Trunk Lid", a: "行李箱蓋", r: "Trunk Lid 覆蓋汽車後方行李箱空間，內部通常設有照明與鎖銷結構。", o: ["引擎蓋", "車門", "行李箱蓋", "車頂"] },
+    { q: "Roof", a: "車頂", r: "Roof 覆蓋車室頂部的鋼板與橫樑結構，提供翻滾時的車室空間安全防護。", o: ["大樑", "車底板", "車頂", "中柱"] },
+    { q: "Seat Track", a: "座椅滑軌", r: "Seat Track 允許汽車座椅前後滑動調整調整，以符合不同身材駕駛者的操作坐姿。", o: ["座椅靠背", "座椅滑軌", "頭枕", "安全帶固定器"] },
+    { q: "Headrest", a: "頭枕", r: "Headrest 裝在座椅上方，在發生追撞時支撐乘員頸部，防止揮鞭效應受傷。", o: ["安全帶", "安全氣囊", "頭枕", "扶手"] },
+    { q: "Glove Box", a: "手套箱", r: "Glove Box 位於副駕駛座前方儀表板下部的儲物盒，內部常有照明燈或阻尼器。", o: ["中央扶手箱", "車門置物槽", "手套箱", "杯架"] },
+    { q: "Sun Visor", a: "遮陽板", r: "Sun Visor 裝在擋風玻璃上方兩側，可向下或向側邊翻轉以阻擋刺眼的陽光。", o: ["後視鏡", "車窗玻璃", "遮陽板", "天窗"] },
+    { q: "Sunroof", a: "天窗", r: "Sunroof 配置在車頂，可向上傾斜或向後滑動開啟，利於車內通風與採光。", o: ["擋風玻璃", "車頂", "天窗", "側窗"] },
+    { q: "Door Handle", a: "車門把手", r: "Door Handle 包含車外與車內把手，透過拉桿解鎖並開啟車門。", o: ["車門鎖", "車門鉸鏈", "車門把手", "車門飾板"] },
+    { q: "Window Regulator", a: "車窗升降機", r: "Window Regulator 包含手動或馬達驅動機構，控制車窗玻璃的垂直上升與下降。", o: ["玻璃泥槽", "車窗升降機", "車門鎖", "六角鎖"] },
+    { q: "Weather-strip", a: "車門防水膠條", r: "Weather-strip 裝在車門或車身四周，防水、防塵、隔音並緩衝車門關閉衝擊。", o: ["隔音棉", "車門防水膠條", "裝飾條", "油封"] },
+    { q: "Fuel Tank", a: "油箱", r: "Fuel Tank 是儲存燃油的安全容器，內部通常整合了燃油泵浦與油分感知器。", o: ["機油底殼", "油箱", "副水箱", "活性碳罐"] },
+    { q: "Oil Pan", a: "機油底殼", r: "Oil Pan 鎖在汽缸體底部，作為曲軸箱下半部，用以收集與儲存循環回流的機油。", o: ["機油底殼", "油箱", "變速箱殼", "閥體"] },
+    { q: "Manning Wrench", a: "梅花開口兩用扳手", r: "Manning Wrench 一端為開口、一端為梅花構造，是修車使用頻率最高的螺絲扳手。", o: ["套筒扳手", "梅花開口兩用扳手", "活動扳手", "扭力扳手"] },
+    { q: "Socket Wrench", a: "套筒扳手", r: "Socket Wrench 利用不同尺寸的圓筒狀套筒搭配棘輪柄，能快速高效地拆裝螺絲。", o: ["套筒扳手", "活動扳手", "氣動起子", "管子扳手"] },
+    { q: "Adjustable Wrench", a: "活動扳手", r: "Adjustable Wrench 具有可調式蝸桿能隨意改變開口大小，可適用多種尺寸螺帽。", o: ["梅花扳手", "開口扳手", "活動扳手", "內六角扳手"] },
+    { q: "Torque Wrench", a: "扭力扳手", r: "Torque Wrench 允許設定精確的鎖緊扭力值，在達到設定值時會發出咔噠聲提示。", o: ["氣動扳手", "扭力扳手", "棘輪扳手", "快速桿"] },
+    { q: "Pliers", a: "鉗子", r: "Pliers 包含老虎鉗、尖嘴鉗等，用於夾持、固定物件或切斷金屬線材的工具。", o: ["扳手", "螺絲起子", "鉗子", "鑿子"] },
+    { q: "Feeler Gauge", a: "厚薄規", r: "Feeler Gauge 又稱間隙規，由多片不同厚度的精準鋼片組成，用以測量汽門間隙。", o: ["游標卡尺", "微測器", "厚薄規", "鋼捲尺"] },
+    { q: "Vernier Caliper", a: "游標卡尺", r: "Vernier Caliper 可精確量測工件的內徑、外徑、深度與階梯厚度，精確度高。", o: ["鋼直尺", "游標卡尺", "分厘卡", "厚薄規"] },
+    { q: "Micrometer", a: "微測器", r: "Micrometer 又稱分厘卡，利用螺旋推進原理量測極微小的厚度與缸徑，精度達0.01mm。", o: ["游標卡尺", "微測器", "厚薄規", "百分表"] },
+    { q: "Dial Indicator", a: "百分表", r: "Dial Indicator 用於檢測旋轉軸的偏心跳動量、軸向間隙或平面度的精密指針量表。", o: ["百分表", "微測器", "卡尺", "壓力表"] },
+    { q: "Hydrometer", a: "比重計", r: "Hydrometer 利用浮力原理量測電瓶水（稀硫酸）或水箱冷卻液的比重以確認濃度。", o: ["溫度計", "電壓表", "比重計", "折射儀"] },
+    { q: "Multimeter", a: "三用電表", r: "Multimeter 能同時量測電壓、電流與電阻，是診斷汽車電路故障的最基本必備工具。", o: ["示波器", "點火正時燈", "三用電表", "診斷儀"] },
+    { q: "Scan Tool", a: "故障診斷儀", r: "Scan Tool 連接車輛OBD插頭，讀取電腦內的故障碼（DTC）與動態實時數據流。", o: ["示波器", "故障診斷儀", "電表", "尾氣分析儀"] },
+    { q: "Jack", a: "千斤頂", r: "Jack 利用液壓或機械螺旋原理將車輛局部頂高，以便進行更換輪胎等局部作業。", o: ["頂車機", "千斤頂", "吊架", "起重機"] },
+    { q: "Creeper", a: "修車躺板", r: "Creeper 帶有腳輪，供技師躺在上方流暢滑入車底進行底盤維修作業。", o: ["工作椅", "修車躺板", "頂車機", "千斤頂"] },
+    { q: "Grease Gun", a: "黃油槍", r: "Grease Gun 用於將高黏度潤滑黃油（油脂）強制壓入懸吊或傳動軸的黃油嘴中。", o: ["機油槍", "黃油槍", "噴漆槍", "吹氣槍"] },
+    { q: "Blow Gun", a: "吹氣槍", r: "Blow Gun 連接工廠壓縮空氣管路，用於快速吹除零件表面的灰塵、水分或鐵屑。", o: ["噴漆槍", "黃油槍", "吹氣槍", "清洗槍"] },
+    { q: "Impact Wrench", a: "氣動衝擊扳手", r: "Impact Wrench 俗稱氣動槍，利用高壓空氣產生強大衝擊扭力，快速拆裝輪胎螺帽。", o: ["氣動鑽", "氣動起子", "氣動衝擊扳手", "棘輪扳手"] },
+    { q: "Bench Vise", a: "桌上虎鉗", r: "Bench Vise 固定在工作檯上，利用兩塊夾鉗強力夾緊工件，便於鋸割、銼削與加工。", o: ["大力鉗", "水管鉗", "桌上虎鉗", "C型夾"] },
+    { q: "Hacksaw", a: "手工鋸", r: "Hacksaw 由鋸架與薄鋸條組合而成，用於人工鋸斷金屬管材或零件的基礎手工具。", o: ["銼刀", "手工鋸", "美工刀", "剪刀"] },
+    { q: "File", a: "銼刀", r: "File 利用表面的無數細小齒紋對金屬工件表面進行微量削平、修邊或去毛刺。", o: ["刮刀", "銼刀", "砂紙", "油石"] },
+    { q: "Hammer", a: "鐵鎚", r: "Hammer 用於敲擊工件、整形金屬或配合鏨子拆卸卡死緊固件的敲擊手工具。", o: ["起子", "鉗子", "鐵鎚", "沖子"] },
+    { q: "Chisel", a: "鏨子", r: "Chisel 配合鐵鎚敲擊，用於切斷金屬板、剔除鉚釘或劈開鏽死螺帽的鋼製銳利工具。", o: ["銼刀", "鏨子", "鑽頭", "中心沖"] },
+    { q: "Center Punch", a: "中心沖", r: "Center Punch 在金屬表面敲擊出一個定位小凹坑，防止鑽孔時鑽頭滑移偏位。", o: ["中心沖", "銷子", "鏨子", "螺絲攻"] },
+    { q: "Twist Drill", a: "麻花鑽頭", r: "Twist Drill 裝在鑽床上旋轉切削，用於在金屬或塑膠材料上鑽出圓孔。", o: ["絲攻", "板牙", "麻花鑽頭", "鉸刀"] },
+    { q: "Tap", a: "螺絲攻", r: "Tap 簡稱絲攻，用於在圓孔內部切削出內螺紋（母螺紋）的專用修護工具。", o: ["板牙", "螺絲攻", "鉸刀", "擴孔器"] },
+    { q: "Die", a: "螺紋板牙", r: "Die 用於在圓柱型圓桿外表面加工切削出外螺紋（公螺紋）的工具。", o: ["螺絲攻", "螺紋板牙", "螺絲模", "絞手"] },
+    { q: "Reamer", a: "鉸刀", r: "Reamer 用於對已鑽好的孔進行微量精細切削，以提高孔的尺寸精度與表面光潔度。", o: ["鑽頭", "絲攻", "鉸刀", "板牙"] },
+    { q: "Soldering Iron", a: "電烙鐵", r: "Soldering Iron 利用電能加熱銲錫，用於修復汽車線路斷線或焊接電子元件。", o: ["熱風槍", "電烙鐵", "瓦斯槍", "噴燈"] },
+    { q: "Glow Plug Tester", a: "預熱塞測試儀", r: "Glow Plug Tester 用於量測柴油引擎預熱塞的電阻與通電發熱功能是否正常。", o: ["噴油嘴試驗台", "預熱塞測試儀", "電瓶測試儀", "點火正時槍"] },
+    { q: "Compression Gauge", a: "汽缸壓力表", r: "Compression Gauge 裝在火星塞孔上，量測汽缸壓縮衝程結束時的最高壓力值。", o: ["燃油壓力表", "汽缸壓力表", "真空表", "機油壓力表"] },
+    { q: "Vacuum Gauge", a: "進氣真空表", r: "Vacuum Gauge 接在進氣歧管上，藉由診斷引擎怠速時的真空度來判斷氣門與正時故障。", o: ["汽缸壓力表", "進氣真空表", "胎壓表", "排氣背壓表"] },
+    { q: "Fuel Pressure Regulator", a: "燃油壓力調節器", r: "Fuel Pressure Regulator 控制供油管路與油軌內油壓恆定，將多餘燃油導回油箱。", o: ["燃油泵", "燃油壓力調節器", "單向閥", "脈動阻尼器"] },
+    { q: "Common Rail", a: "共軌管", r: "Common Rail 儲存柴油高壓泵送來的高壓燃油，並維持高壓分配給各缸噴油嘴。", o: ["噴油管", "回油管", "共軌管", "高壓泵"] },
+    { q: "Glow Plug Relays", a: "預熱塞繼電器", r: "Glow Plug Relays 負責接通大電流供給預熱塞，並由ECU根據水溫控制通電時間。", o: ["起動繼電器", "預熱塞繼電器", "燃油泵繼電器", "喇叭繼電器"] },
+    { q: "Flywheel Ring Gear", a: "飛輪齒環", r: "Flywheel Ring Gear 鑲嵌在飛輪外圈，在啟動時與起動馬達小齒輪嚙合傳遞動力。", o: ["離合器片", "壓板", "飛輪齒環", "同步齒輪"] },
+    { q: "Clutch Disc", a: "離合器片", r: "Clutch Disc 兩面帶有高摩擦係數來令片，夾在飛輪與壓板之間傳遞磨擦扭力。", o: ["離合器壓板", "離合器片", "釋放軸承", "釋放叉"] },
+    { q: "Pressure Plate", a: "離合器壓板", r: "Pressure Plate 利用強力彈簧將離合器片緊緊壓在飛輪上，並隨飛輪同步旋轉。", o: ["離合器片", "離合器壓板", "飛輪", "分離軸承"] },
+    { q: "Release Bearing", a: "離合器釋放軸承", r: "Release Bearing 當踩下離合器踏板時被推向前，壓迫膜片彈簧以釋放壓板解除動力傳遞。", o: ["導向軸承", "釋放軸承", "變速箱軸承", "軸承套"] },
+    { q: "Gear Shift Lever", a: "排檔桿", r: "Gear Shift Lever 供駕駛者手動操作以切換變速箱內部不同嚙合齒輪組的操縱桿。", o: ["排檔桿", "手煞車桿", "方向盤", "離合器踏板"] },
+    { q: "Synchromesh", a: "同步器", r: "Synchromesh 在換檔時利用摩擦錐面使兩快要嚙合的齒輪轉速一致，防止嚙合撞擊打齒。", o: ["行星齒輪", "同步器", "差速器", "副軸"] },
+    { q: "Drive Pinion", a: "主動小齒輪", r: "Drive Pinion 連接傳動軸尾端，將動力輸入差速器減速齒輪組的錐形齒輪。", o: ["環形大齒輪", "主動小齒輪", "行星齒輪", "半軸齒輪"] },
+    { q: "Ring Gear", a: "環形大齒輪", r: "Ring Gear 與主動小齒輪嚙合，實現最終減速並將動力旋轉方向轉向90度傳給半軸。", o: ["主動齒輪", "環形大齒輪", "側齒輪", "行星齒輪"] },
+    { q: "Axle Shaft", a: "傳動半軸", r: "Axle Shaft 將差速器輸出的扭力傳遞給左右兩側車輪的驅動軸心。", o: ["傳動軸", "傳動半軸", "轉向軸", "中間軸"] },
+    { q: "Constant Velocity Joint", a: "等速萬向接頭", r: "Constant Velocity Joint (CV joint) 允許前輪驅動車在轉向與跳動時仍保持完全等速動力傳遞。", o: ["十字軸萬向節", "等速萬向接頭", "聯軸器", "滑動接頭"] },
+    { q: "Brake Booster", a: "煞車真空輔助器", r: "Brake Booster 利用引擎進氣歧管真空度差製造壓力差，成倍放大煞車踏板的踏力。", o: ["煞車總泵", "煞車卡鉗", "煞車真空輔助器", "比例閥"] },
+    { q: "Brake Shoe", a: "煞車蹄片", r: "Brake Shoe 安裝在鼓式煞車內部，承載摩擦來令片，向外張開壓緊煞車鼓。", o: ["煞車來令片", "煞車蹄片", "煞車分泵", "煞車彈簧"] },
+    { q: "Proportioning Valve", a: "煞車比例閥", r: "Proportioning Valve 在緊急煞車時自動限制後輪煞車油壓的增長，防止後輪先鎖死甩尾。", o: ["總泵", "分泵", "煞車比例閥", "單向閥"] },
+    { q: "Parking Brake Cable", a: "手煞車拉線", r: "Parking Brake Cable 鋼絲拉線連接手煞車桿與後輪煞車機構，實現純機械鎖死停車。", o: ["煞車軟管", "煞車硬管", "手煞車拉線", "電線"] },
+    { q: "MacPherson Strut", a: "麥花臣式懸吊", r: "MacPherson Strut 將減震器作為懸吊支柱兼轉向主銷，結構極為緊湊，廣用於轎車前懸。", o: ["雙A臂懸吊", "多連桿懸吊", "麥花臣式懸吊", "拖曳臂懸吊"] },
+    { q: "Double Wishbone", a: "雙A臂懸吊", r: "Double Wishbone 採用上下兩個A字型控制臂，橫向剛性強，輪胎貼地性極佳。", o: ["麥花臣懸吊", "雙A臂懸吊", "拖曳臂懸吊", "扭力樑懸吊"] },
+    { q: "Multi-link Suspension", a: "多連桿懸吊", r: "Multi-link Suspension 由3到5根獨立拉桿組合控制車輪定位，能精準兼顧操控性與舒適性。", o: ["非獨立懸吊", "葉片彈簧懸吊", "多連桿懸吊", "麥花臣懸吊"] },
+    { q: "Rack and Pinion", a: "齒條齒輪式轉向機", r: "Rack and Pinion 齒輪帶動水平齒條直線左右移動，結構簡單傳動直接，小車最主流。", o: ["循環球式轉向機", "齒條齒輪式轉向機", "蝸桿曲柄式", "轉向放大器"] },
+    { q: "Steering Knuckle", a: "轉向節", r: "Steering Knuckle 俗稱羊角，安裝輪軸承並連接控制臂與拉桿，是轉向轉動的樞紐。", o: ["控制臂", "轉向節", "防傾桿", "大樑"] },
+    { q: "Pitman Arm", a: "轉向搖臂", r: "Pitman Arm 安裝在循環球式轉向機輸出軸上，將旋轉軸轉動化為拉桿前後擺動的搖臂。", o: ["惰臂", "轉向搖臂", "中心拉桿", "球接頭"] },
+    { q: "Idler Arm", a: "轉向惰臂", r: "Idler Arm 裝在與轉向搖臂對稱的另一側車架上，用以支撐並維持轉向連桿的水平平衡擺動。", o: ["轉向搖臂", "轉向惰臂", "橫拉桿", "直拉桿"] },
+    { q: "Wheel Alignment Tester", a: "四輪定位儀", r: "Wheel Alignment Tester 利用雷射或3D相機精準測量車輪的前束角與國內外傾角幾何數值。", o: ["側滑試驗器", "四輪定位儀", "平衡機", "煞車試驗器"] },
+    { q: "Wheel Balancer", a: "輪胎平衡機", r: "Wheel Balancer 讓車輪高速旋轉，檢測因質量不均產生的震動，並指示黏貼鉛片位置。", o: ["定位儀", "輪胎平衡機", "拆胎機", "充氣機"] },
+    { q: "Tire Changer", a: "拆胎機", r: "Tire Changer 利用氣動與機械結構將鋼硬的輪胎胎唇從輪圈上安全剝離或安裝的設備。", o: ["千斤頂", "輪胎平衡機", "拆胎機", "舉升機"] }
+];
+
+const dbChnToEng = [
+    { q: "頂車機", a: "Lifter", r: "Lifter 是在維修廠中將整台汽車舉升，以便技術人員進底盤進行修護的設備。", o: ["Ratchet", "Tachometer", "Puller", "Lifter"] },
+    { q: "汽缸蓋墊片", a: "Cylinder Head Gasket", r: "Cylinder Head Gasket 安裝在汽缸體與汽缸蓋之間，防止高壓氣體、冷卻水、機油洩漏。", o: ["Fuel Injector", "Sensor", "Cylinder Head Gasket", "Crankcase"] },
+    { q: "砂輪機", a: "Bench Grinder", r: "Bench Grinder 通常固定在工作檯上，用於磨利鑽頭、鎢鋼工具或修正工件外形。", o: ["Wrench", "Bench Grinder", "Torque Wrench", "Pliers"] },
+    { q: "側滑試驗器", a: "Side Slip Tester", r: "Side Slip Tester 是檢驗線上的標準設備，用於檢查前輪前束與外傾角的配合是否正確。", o: ["Brake Tester", "Axle Weight Scale", "Side Slip Tester", "Speedometer Tester"] },
+    { q: "爆震", a: "Detonation", r: "Detonation 是未經火星塞點燃，末端混合氣因高溫高壓自燃引起的異常劇烈燃燒現象。", o: ["Displacement", "Detonation", "Stroke", "Combustion"] },
+    { q: "預熱塞", a: "Glow Plug", r: "Glow Plug 主要配備於柴油引擎，在冷車啟動前通電發熱以提高燃燒室溫度，幫助發動。", o: ["Spark Plug", "Glow Plug", "Injector", "Fuses"] },
+    { q: "火星塞", a: "Spark Plug", r: "Spark Plug 利用高壓電產生電火花，負責點燃汽油引擎汽缸內被壓縮的混合氣。", o: ["Spark Plug", "Glow Plug", "Distributor", "Ignition Coil"] },
+    { q: "方向盤", a: "Steering Wheel", r: "Steering Wheel 是駕駛員在車室內直接操縱車輛行進方向的最主要介面組件。", o: ["Steering Shaft", "Steering Knuckle", "Tie Rod", "Steering Wheel"] },
+    { q: "轉速計", a: "Tachometer", r: "Tachometer 用以顯示引擎每分鐘的旋轉圈數(RPM)，提醒駕駛人最適當的換檔時機。", o: ["Lifter", "Bench Grinder", "Side Slip Tester", "Tachometer"] },
+    { q: "報廢", a: "Scrapping", r: "Scrapping 意指車輛因老舊不堪使用或嚴重毀損，依規定註銷牌照並進行車體回收毀棄處理。", o: ["Reinspection", "Cancellation", "Scrapping", "Overdue"] },
+    // 追加擴充至40題
+    { q: "速度計試驗器", a: "Speedometer Tester", r: "Speedometer Tester 讓車輛在滾筒上跑，比對車輛時速表與儀器標準車速的誤差。", o: ["Side Slip Tester", "Brake Tester", "Speedometer Tester", "Axle Weight Scale"] },
+    { q: "煞車試驗器", a: "Brake Tester", r: "Brake Tester 利用馬達驅動滾筒量測各車輪的最大制動力、左右平衡度與阻力。", o: ["Side Slip Tester", "Brake Tester", "Chassis Dynamo", "Alignment Tester"] },
+    { q: "軸重計", a: "Axle Weight Scale", r: "Axle Weight Scale 用來秤量汽車單軸或各輪分擔的實際靜態重量數值。", o: ["Brake Tester", "Axle Weight Scale", "Side Slip Tester", "Speedometer Tester"] },
+    { q: "排氣分析儀", a: "Exhaust Gas Analyzer", r: "Exhaust Gas Analyzer 插入尾管量測汽油車排氣中的CO、HC、CO2與O2濃度。", o: ["Smoke Meter", "Exhaust Gas Analyzer", "Scan Tool", "Pressure Gauge"] },
+    { q: "不透光煙度計", a: "Opacity Smoke Meter", r: "Opacity Smoke Meter 利用光束穿透原理量測柴油車排氣黑煙的污染不透光率百分比。", o: ["Gas Analyzer", "Opacity Smoke Meter", "Sound Level Meter", "Flow Meter"] },
+    { q: "噪音計", a: "Sound Level Meter", r: "Sound Level Meter 用於量測排氣管近旁噪音或車室內噪音的分貝（dB）數值。", o: ["Tachometer", "Barometer", "Sound Level Meter", "Luxmeter"] },
+    { q: "頭燈試驗器", a: "Headlamp Tester", r: "Headlamp Tester 用以檢測大燈的光度（燭光數）以及光束偏向角度是否符合法規。", o: ["Luxmeter", "Headlamp Tester", "Refractometer", "Ammeter"] },
+    { q: "起子頭", a: "Screwdriver Bit", r: "Screwdriver Bit 可更換的各種形狀起子頭（十字、一字、星型等），用於氣動或手動起子桿。", o: ["Socket", "Screwdriver Bit", "Drill", "Chisel"] },
+    { q: "棘輪扳手", a: "Ratchet Wrench", r: "Ratchet Wrench 內含單向棘輪結構，不需要反覆離開螺帽即可連續往復快速鎖緊螺絲。", o: ["Torque Wrench", "Ratchet Wrench", "Open Wrench", "Allen Wrench"] },
+    { q: "內六角扳手", a: "Allen Wrench", r: "Allen Wrench 呈L型六角棒狀，專門用於拆裝內六角沉頭螺絲的專用工具。", o: ["Ratchet Wrench", "Allen Wrench", "Pipe Wrench", "Monkey Wrench"] },
+    { q: "管子扳手", a: "Pipe Wrench", r: "Pipe Wrench 具有帶齒的上下圓弧夾爪，專門用來強力夾持與旋轉圓形金屬管路。", o: ["Monkey Wrench", "Strap Wrench", "Pipe Wrench", "Chain Wrench"] },
+    { q: "大力鉗", a: "Locking Pliers", r: "Locking Pliers 具有機械槓桿鎖定結構，能緊緊咬住圓柱或扁平物件不放，解放雙手。", o: ["Slip Joint Pliers", "Locking Pliers", "Needle Nose Pliers", "Diagonal Cutters"] },
+    { q: "尖嘴鉗", a: "Needle Nose Pliers", r: "Needle Nose Pliers 鉗口細長，適合作業空間狹窄處的零件夾持、彎折或微小電線接頭處理。", o: ["Diagonal Cutters", "Needle Nose Pliers", "Lineman's Pliers", "Snap Ring Pliers"] },
+    { q: "斜口鉗", a: "Diagonal Cutters", r: "Diagonal Cutters 刃口位於側邊成一斜角，專門用於切斷銅線、鐵絲或塑膠紮帶的剪切工具。", o: ["Needle Nose Pliers", "Diagonal Cutters", "Wire Stripper", "Tin Snips"] },
+    { q: "卡簧鉗", a: "Snap Ring Pliers", r: "Snap Ring Pliers 鉗尖為細針狀，分為軸用（張開）與穴用（縮小），專用於拆裝彈性扣環。", o: ["Locking Pliers", "Snap Ring Pliers", "Water Pump Pliers", "Combination Pliers"] },
+    { q: "水管鉗", a: "Water Pump Pliers", r: "Water Pump Pliers 夾爪口徑有多檔位可調，並具備長手柄，常在大口徑管件外殼夾持時使用。", o: ["Snap Ring Pliers", "Water Pump Pliers", "Locking Pliers", "Lineman's Pliers"] },
+    { q: "塑膠鎚", a: "Plastic Hammer", r: "Plastic Hammer 鎚頭由軟塑膠或尼龍製成，敲擊時不會損傷零件精密的加工表面或油漆。", o: ["Ball Peen Hammer", "Plastic Hammer", "Sledge Hammer", "Brass Hammer"] },
+    { q: "塑膠刮刀", a: "Plastic Scraper", r: "Plastic Scraper 用於刮除汽缸平面舊墊片、殘膠時，不傷及鋁合金箱體的專用硬塑料刮刀。", o: ["Chisel", "Plastic Scraper", "Putty Knife", "Wire Brush"] },
+    { q: "鋼絲刷", a: "Wire Brush", r: "Wire Brush 由硬鋼絲製成，主要用以清除零件表面嚴重的鐵鏽、碳渣與舊漆結構。", o: ["File", "Wire Brush", "Sandpaper", "Scraper"] },
+    { q: "螺絲攻把手", a: "Tap Wrench", r: "Tap Wrench 夾持螺絲攻（絲攻）的T型或長條型雙手操作手柄，用以轉動攻牙。", o: ["Die Stock", "Tap Wrench", "Ratchet Handle", "Extension Bar"] },
+    { q: "板牙把手", a: "Die Stock", r: "Die Stock 中央為圓孔結構，用以緊固外螺紋板牙並進行外螺紋手工切削的雙手手柄。", o: ["Tap Wrench", "Die Stock", "Speed Handle", "Breaker Bar"] },
+    { q: "點火正時燈", a: "Timing Light", r: "Timing Light 利用分電盤跳火感應同步閃爍，對準曲軸皮帶盤刻度用以檢查與調整點火正時角度。", o: ["Multimeter", "Timing Light", "Scan Tool", "Oscilloscope"] },
+    { q: "冷媒壓力表", a: "A/C Manifold Gauge", r: "A/C Manifold Gauge 包含高低壓雙表頭與三色軟管，用以檢測空調系統壓力與充填冷媒。", o: ["Vacuum Gauge", "A/C Manifold Gauge", "Compression Tester", "Fuel Gauge"] },
+    { q: "冷媒回收機", a: "Refrigerant Recovery Machine", r: "Refrigerant Recovery Machine 抽取空調內的冷媒進行過濾、淨化與回收儲存，防止冷媒排入大氣。", o: ["Vacuum Pump", "Refrigerant Recovery Machine", "Compressor", "Leak Detector"] },
+    { q: "真空泵", a: "Vacuum Pump", r: "Vacuum Pump 在充填冷媒前，對空調管路內部長時間抽真空以完全排除空氣與水分。", o: ["Air Compressor", "Vacuum Pump", "Water Pump", "Oil Pump"] },
+    { q: "噴油嘴檢驗台", a: "Injector Tester", r: "Injector Tester 建立高壓油壓，測試噴油嘴的噴霧霧化形狀、噴油量與有無滴漏現象。", o: ["Fuel Pump Tester", "Injector Tester", "Spark Tester", "Glow Plug Tester"] },
+    { q: "氣動鑽", a: "Air Drill", r: "Air Drill 以壓縮空氣為動力源驅動鑽頭旋轉，具有防爆、高轉速與重量輕的優點。", o: ["Electric Drill", "Air Drill", "Impact Wrench", "Die Grinder"] },
+    { q: "游標厚薄規", a: "Thickness Gauge", r: "Thickness Gauge 常指量測制動盤、剎車片磨損剩餘精確厚度的專用卡規量具。", o: ["Feeler Gauge", "Thickness Gauge", "Thread Gauge", "Pitch Gauge"] },
+    { q: "螺距規", a: "Thread Pitch Gauge", r: "Thread Pitch Gauge 帶有各種鋸齒牙型，用以快速比對並確認螺栓螺紋公制或英制牙距的齒規。", o: ["Feeler Gauge", "Thread Pitch Gauge", "Radius Gauge", "Dial Caliper"] },
+    { q: "牌照登記書", a: "Vehicle Registration Certificate", r: "Vehicle Registration Certificate 俗稱新領牌照登記書，記載車輛所有權人的各項基本原始車籍資料。", o: ["Driving License", "Vehicle Registration Certificate", "Insurance Card", "Invoice"] }
+];
+
+// ==========================================
+// 測驗系統邏輯主核心
+// ==========================================
+let currentQuestions = []; // 目前正在測驗的題目集
+let currentIndex = 0;      // 目前進行到第幾題
+let score = 0;              // 全新測驗累計分數
+let wrongLog = [];         // 答錯題目的暫存資料庫
+let isWrongRetryMode = false; // 是否正在進行錯題再練
+
+// Fisher-Yates 陣列隨機洗牌演算法
+function shuffle(array) {
+    let m = array.length, t, i;
+    while (m) {
+        i = Math.floor(Math.random() * m--);
+        t = array[m];
+        array[m] = array[i];
+        array[i] = t;
+    }
+    return array;
+}
+
+// 畫面切換控制
+function switchScreen(screenId) {
+    document.querySelectorAll('.card').forEach(card => card.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+}
+
+// 初始化並啟動測驗
+function startQuiz(retryMode) {
+    isWrongRetryMode = retryMode;
+    currentIndex = 0;
+
+    if (!isWrongRetryMode) {
+        // 【全新測驗】：英翻中(160題)打亂後隨機抽40題 + 中翻英(40題)打亂後隨機抽10題，最後彙整成50題卷
+        score = 0;
+        wrongLog = [];
+
+        let shuffledPart1 = shuffle([...dbEngToChn]).slice(0, 40); // 隨機抽 40 題英翻中
+        let shuffledPart2 = shuffle([...dbChnToEng]).slice(0, 10); // 隨機抽 10 題中翻英
+
+        currentQuestions = [...shuffledPart1, ...shuffledPart2];
+    } else {
+        // 【錯題再練】：將剛才記錄下來的答錯題目重新洗牌
+        currentQuestions = shuffle([...wrongLog]);
+        wrongLog = []; // 清空以記錄新一輪的錯題
+    }
+
+    switchScreen('screen-quiz');
+    loadQuestion();
+}
+
+// 載入當前題目
+function loadQuestion() {
+    // 隱藏解析與下一題按鈕
+    document.getElementById('rational-box').style.display = 'none';
+    document.getElementById('btn-next').style.display = 'none';
+
+    if (currentQuestions.length === 0) {
+        alert("目前沒有錯題紀錄，請先挑戰一般測驗！");
+        goHome();
+        return;
+    }
+
+    // 檢查是否已全部答完
+    if (currentIndex >= currentQuestions.length) {
+        showResult();
+        return;
+    }
+
+    // 更新進度條
+    const progressPercent = (currentIndex / currentQuestions.length) * 100;
+    document.getElementById('progress-bar').style.width = progressPercent + '%';
+
+    // 取得目前題目資料
+    const qData = currentQuestions[currentIndex];
+
+    // 更新題次與分類中繼資訊
+    document.getElementById('info-count').innerText = `題次：${currentIndex + 1} / ${currentQuestions.length}`;
+    if (currentIndex < 40 && !isWrongRetryMode) {
+        document.getElementById('info-type').innerText = "分類：一、英翻中(每題2分)";
+    } else if (!isWrongRetryMode) {
+        document.getElementById('info-type').innerText = "分類：二、中翻英(每題2分)";
+    } else {
+        document.getElementById('info-type').innerText = "錯題精確強化練習中";
+    }
+
+    // 顯示題目內容
+    document.getElementById('question-text').innerText = `題目： ${qData.q}`;
+
+    // 打亂題目內的選項順序
+    const shuffledOptions = shuffle([...qData.o]);
+
+    // 渲染選項按鈕
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+
+    shuffledOptions.forEach(option => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = option;
+        // 綁定點擊事件並傳入相關資料
+        btn.onclick = () => selectAnswer(btn, option, qData.a, qData.r, qData);
+        container.appendChild(btn);
+    });
+}
+
+// 處理使用者點選答案
+function selectAnswer(selectedBtn, chosenOpt, correctOpt, rationale, fullQuestionData) {
+    // 立即鎖定本題所有選項，防止重複點擊
+    const allButtons = document.querySelectorAll('.option-btn');
+    allButtons.forEach(btn => btn.disabled = true);
+
+    // 展開即時詳解說明
+    const rationalBox = document.getElementById('rational-box');
+    rationalBox.innerHTML = `<b>【解析提示 (Rationale)】</b><br>${rationale}`;
+    rationalBox.style.display = 'block';
+
+    if (chosenOpt === correctOpt) {
+        // 答對變綠色
+        selectedBtn.classList.add('correct');
+        // 只有在全新測驗模式下才計算加分；錯題再練僅做導正複習
+        if (!isWrongRetryMode) {
+            score += 2;
+        }
+    } else {
+        // 答錯變紅色
+        selectedBtn.classList.add('wrong');
+        // 並找出正確的那個選項強制標註為綠色，加深印象
+        allButtons.forEach(btn => {
+            if (btn.innerText === correctOpt) {
+                btn.classList.add('correct');
+            }
+        });
+
+        // 記錄該題到錯題本中 (避免重複加入)
+        if (!wrongLog.some(item => item.q === fullQuestionData.q)) {
+            wrongLog.push(fullQuestionData);
+        }
+    }
+
+    // 顯示「下一題」按鈕
+    document.getElementById('btn-next').style.display = 'block';
+}
+
+// 進入下一題
+function nextQuestion() {
+    currentIndex++;
+    loadQuestion();
+}
+
+// 顯示最後測驗結果
+function showResult() {
+    document.getElementById('progress-bar').style.width = '100%';
+    switchScreen('screen-result');
+
+    const scoreDisplay = document.getElementById('score-display');
+    const summary = document.getElementById('result-summary');
+    const retryWrongBtn = document.getElementById('btn-retry-wrong');
+
+    if (!isWrongRetryMode) {
+        // 顯示正常挑戰總結
+        scoreDisplay.innerText = `${score} 分`;
+        if (wrongLog.length > 0) {
+            summary.innerHTML = `本次全新測驗已結束。<br>您的得分為 <b>${score}分</b>，一共答錯了 <b>${wrongLog.length}</b> 題。<br>點擊下方「錯題再練」可針對錯誤題目個別特訓！`;
+            retryWrongBtn.style.display = 'block';
+        } else {
+            summary.innerHTML = `🎉 太厲害了！您獲得了 <b>100分滿分</b>！<br>完美的汽車英文術語專家，已無任何錯題需要練習。`;
+            retryWrongBtn.style.display = 'none';
+        }
+    } else {
+        // 顯示再練模式總結
+        scoreDisplay.innerText = "複習完成";
+        if (wrongLog.length > 0) {
+            summary.innerHTML = `這一輪的錯題強化中，您仍有 <b>${wrongLog.length}</b> 題不小心答錯。<br>別氣餒，再點擊一次按鈕繼續練習，直到全部答對為止！`;
+            retryWrongBtn.style.display = 'block';
+        } else {
+            summary.innerHTML = `✨ 恭喜！本次遺留的錯題已<b>全數答對、複習完畢</b>！<br>您的不熟練盲點已成功清除，可以返回首頁重新挑戰完整測驗囉。`;
+            retryWrongBtn.style.display = 'none';
+        }
+    }
+}
+
+// 返回主畫面
+function goHome() {
+    switchScreen('screen-start');
+}
+</script>
+
+</body>
+</html>
